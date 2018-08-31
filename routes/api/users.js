@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 //Ucitava User model
 const User  = require('../../models/User')
+const keys = require('../../config/keys')
 
 //@route GET api/users/test
 //@desc Testira users rutu
@@ -61,7 +63,16 @@ router.post('/login', (req, res) => {
         bcrypt.compare(password, user.password)
           .then(isMatch => {
             if(isMatch) {
-              res.json({msg : 'Success'})
+              //Kada je User pogodjen
+              console.log('radi')
+              const payload = { id: user.id, name: user.name} //Payload za JWT token
+
+              jwt.sign(payload, keys.secret, {expiresIn: 3600}, (err, token) => {
+                res.json({
+                    success: true,
+                    token: `Bearer ${token}`
+                })
+              }) 
             } else {
               res.status(400).json({msg: 'Invalid password'})
             } 
