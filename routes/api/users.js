@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const passport = require('passport')
 
 //Ucitava User model
 const User  = require('../../models/User')
@@ -64,7 +65,6 @@ router.post('/login', (req, res) => {
           .then(isMatch => {
             if(isMatch) {
               //Kada je User pogodjen
-              console.log('radi')
               const payload = { id: user.id, name: user.name} //Payload za JWT token
 
               jwt.sign(payload, keys.secret, {expiresIn: 3600}, (err, token) => {
@@ -79,6 +79,14 @@ router.post('/login', (req, res) => {
           })
           .catch(err => console.log(err)) 
       })
+})
+
+//@route GET api/users/current
+//@desc Vrati mi trenutnog usera
+//@access Privjet
+
+router.get('/current', passport.authenticate('jwt', {session : false}), (req, res) => {
+    res.json({msg: 'Success'})
 })
 
 module.exports = router

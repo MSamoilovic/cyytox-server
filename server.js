@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const passport = require('passport');
 
 const users = require('./routes/api/users')
 const profile = require('./routes/api/profile')
@@ -10,6 +11,11 @@ const app = express();
 
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
+
+// Passport
+app.use(passport.initialize())
+
+require('./config/passport')(passport)
 
 //Setovanje baze
 const db = require('./config/keys').mongoURL;
