@@ -10,6 +10,7 @@ const keys = require('../../config/keys')
 
 //load Input Validaton
 const validateRegisterInput = require('../../validation/register')
+const validateLoginInput = require('../../validation/login');
 
 
 //@route GET api/users/test
@@ -63,13 +64,20 @@ router.post('/register', (req, res) => {
 //@access Public
 
 router.post('/login', (req, res) => {
+    const { errors, isValid } = validateLoginInput(req.body)
+
+    if(!isValid) {
+        return res.status(400).json(errors)
+    }
+
     const email =  req.body.email;
     const password = req.body.password;
 
     User.findOne({email})
       .then(user => {
         if(!user) {
-            return res.status(404).json({msg: 'User not found'})
+            errors.email = 'User not found'
+            return res.status(404).json(errors)
         }
 
         bcrypt.compare(password, user.password)
@@ -85,7 +93,8 @@ router.post('/login', (req, res) => {
                 })
               }) 
             } else {
-              res.status(400).json({msg: 'Invalid password'})
+              errors.password = `Password Incorrect`
+              res.status(400).json(errors)
             } 
           })
           .catch(err => console.log(err)) 
