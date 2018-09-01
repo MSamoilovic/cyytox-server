@@ -8,6 +8,10 @@ const passport = require('passport')
 const User  = require('../../models/User')
 const keys = require('../../config/keys')
 
+//load Input Validaton
+const validateRegisterInput = require('../../validation/register')
+
+
 //@route GET api/users/test
 //@desc Testira users rutu
 //@access Public
@@ -22,10 +26,17 @@ router.get('/test', (req, res) => {
 //@access Public
 
 router.post('/register', (req, res) => {
+    const { errors, isValid } = validateRegisterInput(req.body)
+
+    if(!isValid) {
+        return res.status(400).json(errors)
+    }
+
     User.findOne({email : req.body.email})
       .then(user => {
         if (user) {
-            return res.status(400).json({msg: 'Email already exists'})
+            errors.email = 'Email already exists'
+            return res.status(400).json(errors)
         } else {
             const newUser = new User ({
                 name : req.body.name,
