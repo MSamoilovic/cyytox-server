@@ -66,15 +66,16 @@ router.post('/', passport.authenticate('jwt', {session: false}),(req, res) => {
           } else {
             Profile.findOne({handle : profileFields.handles})
               .then(profile => {
-                  if (profile) {
-                    errors.handle = 'This handle already exists'
-                    res.status(400).json(errors)
-                  }
+                if (profile) {
+                  errors.handle = 'This handle already exists'
+                  res.status(400).json(errors)
+                }
 
-                  new Profile(profileFields).save()
-                   .then(profile => res.json(profile))
-                   .catch(err => console.log(err))
+                new Profile(profileFields).save()
+                  .then(profile => res.json(profile))
+                  .catch(err => console.log(err))
               })
+              .catch(err => console.log(err))
           }
       })
 })
