@@ -13,11 +13,6 @@ const ProfileSchema = new Schema({
         max: 20
     },
 
-
-    website : {
-        type: String
-    },
-
     location : {
         type: String
     },

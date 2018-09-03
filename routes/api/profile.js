@@ -31,4 +31,52 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
       })
       .catch(err => res.status(404).json(err))
 })
+
+//@route POST api/profile
+//@desc Kreira ili edituje profil korisnika
+//@access Public
+
+router.post('/', passport.authenticate('jwt', {session: false}),(req, res) => {
+    const profileFields = {}
+    const errors = {}
+
+    profileFields.user =  req.user.id
+    if(req.body.handle) profileFields.handle = req.body.handle
+    if(req.body.location) profileFields.location = req.body.location
+    if(req.body.bio) profileFields.bio = req.body.bio
+
+    if(typeof req.body.interests !== 'undefined') {
+        profileFields.interests = req.body.intrests.split(',')
+    }
+
+    //Za Social
+
+    profileFields.social = {}
+    if(req.body.facebook) profileFields.social.facebook = req.body.facebook
+    if(req.body.twitter) profileFields.social.twitter = req.body.twitter
+    if(req.body.instagram) profileFields.social.instagram = req.body.instagram
+
+    Profile.findOne({ user: req.user.id})
+      .then(profile => {
+          if(profile) {
+            Profile.findOneAndUpdate( {user: req.user.id}, {$set: profileFields}, {new: true})
+              .then(profile => res.json(profile))
+              .catch(err => console.log(err)) 
+              
+          } else {
+            Profile.findOne({handle : profileFields.handles})
+              .then(profile => {
+                  if (profile) {
+                    errors.handle = 'This handle already exists'
+                    res.status(400).json(errors)
+                  }
+
+                  new Profile(profileFields).save()
+                   .then(profile => res.json(profile))
+                   .catch(err => console.log(err))
+              })
+          }
+      })
+})
+
 module.exports = router
