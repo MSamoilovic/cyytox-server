@@ -34,6 +34,46 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
       .catch(err => res.status(404).json(err))
 })
 
+//@route GET api/profile/handle/:handle
+//@desc Dohvati profil na osnovu hendla
+//@access Public
+
+router.get('/handle/:handle', (req, res) => {
+  const errors = {}
+
+  Profile.findOne({ handle: req.params.handle })
+    .populate('user', ['name', 'email'])
+    .then(profile => {
+      if(!profile) {
+        errors.noprofile = "There is no profile for this user"
+        res.status(400).json({errors})
+      }
+
+      res.json(profile)
+    })
+    .catch(err => res.status(404).json(err))
+})
+
+//@route GET api/profile/user/:user_id
+//@desc Dohvati profil na osnovu id korisnika
+//access Public
+
+router.get('/user/:user_id', (req, res) => {
+  const errors = {};
+
+  Profile.findOne({ user: req.params.user_id })
+    .populate('user', ['name', 'avatar'])
+    .then(profile => {
+      if(!profile) {
+        errors.noprofile = 'There is no profile for user with this id'
+        res.status(404).json(errors)
+      }
+
+      res.json(profile)
+    })
+    .catch(err => res.json(err))
+})
+
 //@route POST api/profile
 //@desc Kreira ili edituje profil korisnika
 //@access Public
@@ -86,5 +126,6 @@ router.post('/', passport.authenticate('jwt', {session: false}),(req, res) => {
         }
     })
 })
+
 
 module.exports = router
