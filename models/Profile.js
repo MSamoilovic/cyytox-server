@@ -13,12 +13,18 @@ const ProfileSchema = new Schema({
         max: 20
     },
 
+    occupation : {
+        type: String,
+        required: true
+    },
+
     location : {
         type: String
     },
 
     interests : {
-        type: [String]
+        type: [String],
+        required: true
     },
 
     bio: {

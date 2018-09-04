@@ -6,6 +6,7 @@ const passport = require('passport')
 
 const Profile = require('../../models/Profile')
 const User = require('../../models/User')
+const validateProfileInput = require('../../validation/profile')
 //@route GET api/profile/test
 //@desc Testira Profile rutu
 //@access Public
@@ -21,6 +22,7 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
     const errors = {}
     
     Profile.findOne({ user: req.user.id})
+      .populate('user', ['name', 'email'])
       .then(profile => {
         if (!profile) {
           errors.noprofile = 'Profile not found'
@@ -37,47 +39,52 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
 //@access Public
 
 router.post('/', passport.authenticate('jwt', {session: false}),(req, res) => {
-    const profileFields = {}
-    const errors = {}
+  const {errors, isValid} = validateProfileInput(req.body); 
+  
+  if(!isValid) {
+    return res.status(400).json(errors)
+  }
 
-    profileFields.user =  req.user.id
-    if(req.body.handle) profileFields.handle = req.body.handle
-    if(req.body.location) profileFields.location = req.body.location
-    if(req.body.bio) profileFields.bio = req.body.bio
+  const profileFields = {}
+  profileFields.user =  req.user.id
+  if(req.body.handle) profileFields.handle = req.body.handle
+  if(req.body.occupation) profileFields.occupation = req.body.occupation
+  if(req.body.location) profileFields.location = req.body.location
+  if(req.body.bio) profileFields.bio = req.body.bio
 
-    if(typeof req.body.interests !== 'undefined') {
-        profileFields.interests = req.body.intrests.split(',')
-    }
+  if(typeof req.body.interests !== 'undefined') {
+    profileFields.interests = req.body.interests.split(',')
+  }
+  
+  //Za Social
 
-    //Za Social
+  profileFields.social = {}
+  if(req.body.facebook) profileFields.social.facebook = req.body.facebook
+  if(req.body.twitter) profileFields.social.twitter = req.body.twitter
+  if(req.body.instagram) profileFields.social.instagram = req.body.instagram
 
-    profileFields.social = {}
-    if(req.body.facebook) profileFields.social.facebook = req.body.facebook
-    if(req.body.twitter) profileFields.social.twitter = req.body.twitter
-    if(req.body.instagram) profileFields.social.instagram = req.body.instagram
+  Profile.findOne({ user: req.user.id})
+    .then(profile => {
+        if(profile) {
+          Profile.findOneAndUpdate( {user: req.user.id}, {$set: profileFields}, {new: true})
+            .then(profile => res.json(profile))
+            .catch(err => console.log(err)) 
+            
+        } else {
+          Profile.findOne({handle : profileFields.handles})
+            .then(profile => {
+              if (profile) {
+                errors.handle = 'This handle already exists'
+                res.status(400).json(errors)
+              }
 
-    Profile.findOne({ user: req.user.id})
-      .then(profile => {
-          if(profile) {
-            Profile.findOneAndUpdate( {user: req.user.id}, {$set: profileFields}, {new: true})
-              .then(profile => res.json(profile))
-              .catch(err => console.log(err)) 
-              
-          } else {
-            Profile.findOne({handle : profileFields.handles})
-              .then(profile => {
-                if (profile) {
-                  errors.handle = 'This handle already exists'
-                  res.status(400).json(errors)
-                }
-
-                new Profile(profileFields).save()
-                  .then(profile => res.json(profile))
-                  .catch(err => console.log(err))
-              })
-              .catch(err => console.log(err))
-          }
-      })
+              new Profile(profileFields).save()
+                .then(profile => res.json(profile))
+                .catch(err => console.log(err))
+            })
+            .catch(err => console.log(err))
+        }
+    })
 })
 
 module.exports = router
