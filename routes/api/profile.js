@@ -74,6 +74,22 @@ router.get('/user/:user_id', (req, res) => {
     .catch(err => res.json(err))
 })
 
+//@route GET api/profile/all
+//@desc Dohvata sve profile
+//@access Public
+
+router.get('/all', (req, res)=> {
+  Profile.find()
+  .populate('user', ['name', 'avatar'])
+  .then(profiles=> {
+    if(!profiles) {
+      return res.status(404).json({msg : 'There are no profiles'})
+    }
+
+    res.json(profiles)
+  })
+  .catch(err => res.status(404).json({msg : 'There are no profiles'}))
+})
 //@route POST api/profile
 //@desc Kreira ili edituje profil korisnika
 //@access Public
