@@ -14,6 +14,8 @@ const app = express();
 const server = http.createServer(app)
 const io = socketIO(server)
 
+const ProfileSchema = require('./models/Profile')
+
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 app.use(cors())
@@ -41,6 +43,7 @@ app.use('/api/profile', profile)
 app.use('/api/posts', posts)
 
 const port =  process.env.PORT || 5000;
+
 
 //Dodavanje Socketa
 io.on('connection', (socket)=> {

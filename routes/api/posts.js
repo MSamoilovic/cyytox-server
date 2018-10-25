@@ -52,7 +52,7 @@ router.get('/' , (req, res) => {
 router.get('/:id', (req, res) => {
     Post.findById(req.params.id)
      .then(post => res.json(post))
-     .catch(err => res.status(404).json({nopostfound : 'No post found'}))
+     .catch(err => res.status(404).json(err))
 })
 
 //@route DELETE api/posts/:id
@@ -64,12 +64,15 @@ router.delete('/:id', passport.authenticate('jwt', {session: false}), (req, res)
      .then(profile => {
         Post.findById(req.params.id)
          .then(post => {
+             console.log('post.user', post.user)
+             console.log('req.user.id', req.user.id)
             if(post.user.toString() !== req.user.id) {
               return res.status(401).json({authorized: 'Not Authorized'})
             }
 
             post.remove()
-             .then( res => res.json({success: 'true'}))
+             .then(() => res.status(200).json({success: 'true'}))
+             .catch(err => console.log(err))
          })
          .catch(err => res.json(err))
      })
@@ -86,7 +89,7 @@ router.post('/like/:id', passport.authenticate('jwt', {session: false}), (req, r
    .then(profile => {
     Post.findById(req.params.id)
      .then(post => {
-        if(post.likes.filter(like => like.user.toString() === req.user.id).length > 0) {
+        if(post.likes.filter(like => like.user.toString() === req.user._id).length > 0) {
           return res.status(400).json({alreadyliked: 'You already liked this post'})    
         }
 
