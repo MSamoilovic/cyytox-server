@@ -61,11 +61,10 @@ router.get('/:id', (req, res) => {
 
 router.delete('/:id', passport.authenticate('jwt', {session: false}), (req, res) => {
     Profile.findOne({user: req.user.id})
+    //eslint-disable-next-line
      .then(profile => {
         Post.findById(req.params.id)
          .then(post => {
-             console.log('post.user', post.user)
-             console.log('req.user.id', req.user.id)
             if(post.user.toString() !== req.user.id) {
               return res.status(401).json({authorized: 'Not Authorized'})
             }

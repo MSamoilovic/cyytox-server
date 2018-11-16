@@ -68,10 +68,9 @@ router.get('/user/:user_id', (req, res) => {
         errors.noprofile = 'There is no profile for user with this id'
         res.status(404).json(errors)
       }
-
       res.json(profile)
     })
-    .catch(err => res.json(err))
+    .catch((err) => console.log(err))
 })
 
 //@route GET api/profile/all
